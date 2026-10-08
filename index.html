@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCFHS Med-Surg & Midwifery Clinical Matrix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans selection:bg-teal-500 selection:text-slate-900">
+
+  <!-- Header & Navigation -->
+  <header class="w-full max-w-5xl glass-card rounded-2xl p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-teal-500/30 shadow-xl">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="bg-teal-500/20 text-teal-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-teal-500/40">SCFHS Prometric Standard</span>
+        <h1 class="text-xl font-bold bg-gradient-to-r from-teal-400 via-emerald-300 to-amber-300 bg-clip-text text-transparent">
+          Clinical Matrix Simulator
+        </h1>
+      </div>
+      <p class="text-xs text-slate-400 mt-0.5">Nursing & Midwifery High-Yield Symptoms, Interventions, & Dosing</p>
+    </div>
+    
+    <!-- Game Mode Selectors -->
+    <div class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+      <button id="mode-match-btn" onclick="switchMode('match')" class="px-3 py-1.5 rounded-lg text-teal-400 bg-slate-800 transition">Speed Match</button>
+      <button id="mode-dosing-btn" onclick="switchMode('dosing')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition">Dosing Dial</button>
+      <button id="mode-flag-btn" onclick="switchMode('flag')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition">Red Flag Safety</button>
+    </div>
+
+    <!-- Score & Timer -->
+    <div class="flex items-center gap-3">
+      <div id="timer-display" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-sm px-3 py-1.5 rounded-lg font-bold">
+        ⏱️ 25s
+      </div>
+      <div id="score-display" class="bg-teal-500/10 border border-teal-500/30 text-teal-400 font-mono text-sm px-3 py-1.5 rounded-lg font-bold">
+        Score: 0
+      </div>
+    </div>
+  </header>
+
+  <!-- Game Arena -->
+  <main class="w-full max-w-5xl flex-1 flex flex-col justify-center">
+
+    <!-- MODE 1: SPEED MATCH MATRIX -->
+    <section id="game-mode-match" class="glass-card rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-500/20">
+          Match Presentation to Nursing/Midwifery Treatment & Drug
+        </span>
+        <span id="match-case-counter" class="text-xs text-slate-400 font-mono">Case 1 / 50</span>
+      </div>
+
+      <!-- Vignette Prompt & Symptoms -->
+      <div class="bg-slate-900/90 rounded-xl p-4 mb-4 border border-slate-800">
+        <h2 id="match-condition-title" class="text-lg font-bold text-amber-300 mb-1">Loading...</h2>
+        <div class="text-xs text-teal-300 font-semibold mb-1 uppercase tracking-wider">Clinical Presentation / Symptoms:</div>
+        <p id="match-symptoms" class="text-sm text-slate-200 leading-relaxed bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">Loading clinical presentation...</p>
+      </div>
+
+      <!-- Match Target Options Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase">1. Priority Nursing / Midwifery Intervention</label>
+          <div id="tx-options" class="space-y-2"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase">2. Target Pharmacotherapy & Exact Dosing</label>
+          <div id="drug-options" class="space-y-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODE 2: DOSING DIAL SIMULATOR -->
+    <section id="game-mode-dosing" class="hidden glass-card rounded-2xl p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+          Precision Clinical Dosing Calibration
+        </span>
+        <span id="dosing-case-counter" class="text-xs text-slate-400 font-mono">Case 1 / 50</span>
+      </div>
+
+      <div class="bg-slate-900/90 rounded-xl p-4 mb-6 border border-slate-800">
+        <h3 id="dosing-drug-name" class="text-xl font-bold text-teal-300 mb-1">Loading...</h3>
+        <p id="dosing-case-desc" class="text-xs text-slate-300 mb-2">Loading indication...</p>
+        <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 text-xs text-emerald-300">
+          <strong>SCFHS Key Nursing Care:</strong> <span id="dosing-nursing-care">Loading...</span>
+        </div>
+      </div>
+
+      <div class="space-y-5 max-w-lg mx-auto">
+        <!-- Slider: Amount -->
+        <div>
+          <div class="flex justify-between text-sm font-semibold mb-1">
+            <span>Calibrated Value:</span>
+            <span id="slider-dose-val" class="text-teal-400 font-mono text-lg font-bold">1.0</span>
+          </div>
+          <input type="range" id="slider-dose" min="0.1" max="1000" step="0.1" value="1" class="w-full accent-teal-400 bg-slate-800 rounded-lg cursor-pointer h-2">
+        </div>
+
+        <!-- Radio: Unit -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase">Measurement Unit</label>
+          <div id="unit-options" class="grid grid-cols-4 gap-2">
+            <button onclick="setUnit('mg')" class="unit-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">mg</button>
+            <button onclick="setUnit('g')" class="unit-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">g</button>
+            <button onclick="setUnit('mcg')" class="unit-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">mcg</button>
+            <button onclick="setUnit('Units')" class="unit-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">Units</button>
+          </div>
+        </div>
+
+        <!-- Radio: Route -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase">Administration Route</label>
+          <div id="route-options" class="grid grid-cols-3 gap-2">
+            <button onclick="setRoute('IV Loading')" class="route-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">IV Loading</button>
+            <button onclick="setRoute('IM')" class="route-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">IM</button>
+            <button onclick="setRoute('PO')" class="route-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700">PO</button>
+          </div>
+        </div>
+
+        <button onclick="submitDosing()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 font-bold text-white rounded-xl shadow-lg transition mt-2">
+          Confirm & Administer
+        </button>
+      </div>
+    </section>
+
+    <!-- MODE 3: RED FLAG SAFETY COUNTER-ACTION -->
+    <section id="game-mode-flag" class="hidden glass-card rounded-2xl p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-xs font-bold uppercase tracking-wider text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+          SCFHS Patient Safety & Safety Override
+        </span>
+        <span id="flag-case-counter" class="text-xs text-slate-400 font-mono">Case 1 / 50</span>
+      </div>
+
+      <div class="bg-slate-900/90 rounded-xl p-4 mb-6 border border-slate-800">
+        <div class="flex items-center gap-2 text-rose-400 font-bold text-sm mb-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          High-Risk Clinical Vignette
+        </div>
+        <p id="flag-scenario" class="text-sm text-slate-200 leading-relaxed"></p>
+      </div>
+
+      <p class="text-xs font-bold text-center text-slate-400 mb-4 uppercase">Proposed Intervention/Order: <span id="flag-proposed-drug" class="text-amber-400 underline">Loading...</span></p>
+
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="handleFlagAction(false)" class="p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold text-slate-200 transition">
+          ✅ Safe to Execute Order
+        </button>
+        <button onclick="handleFlagAction(true)" class="p-4 bg-rose-600/30 hover:bg-rose-600/40 border border-rose-500 text-rose-200 rounded-xl font-bold transition">
+          🛑 CONTRAINDICATED (Stop & Report)
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    class SoundEngine {
+      constructor() { this.ctx = null; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playCorrect() {
+        this.init();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.frequency.setValueAtTime(f, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.15, now + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.15);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.06); osc.stop(now + idx * 0.06 + 0.15);
+        });
+      }
+      playWrong() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + 0.25);
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // 50 SCFHS NURSING & MIDWIFERY CASES WITH SYMPTOMS AND TREATMENTS
+    const matrixCases = [
+      { id: 1, cond: "Postpartum Hemorrhage (PPH)", symp: "BOGGY UTERUS, heavy vaginal bleeding (>500mL post-NVD), tachycardia, BP 85/50", treatment: "Bimanual Uterine Massage + High Flow O2", drug: "Oxytocin (Pitocin)", dose: "20.0", unit: "Units", route: "IV Loading", exact: "20 Units in 1L NS IV infusion", flagDrug: "Perform Forceps Traction", isFlag: true },
+      { id: 2, cond: "Severe Eclampsia Crisis", symp: "Pregnant 34 wks, BP 170/110, generalized tonic-clonic seizures, hyperreflexia (+4), proteinuria +3", treatment: "Maintain airway, side-lying position, padded side rails", drug: "Magnesium Sulfate", dose: "4.0", unit: "g", route: "IV Loading", exact: "4g IV loading dose over 15 min", flagDrug: "Ergotamine Administration", isFlag: true },
+      { id: 3, cond: "Umbilical Cord Prolapse", symp: "Sudden fetal bradycardia (FHR <90), visible or palpable pulsating loop in vagina after AROM", treatment: "Relieve pressure: Elevate fetal presenting part per vaginam + Trendelenburg", drug: "Terbutaline (Tocolytic)", dose: "0.25", unit: "mg", route: "IM", exact: "0.25 mg SubQ/IM stat", flagDrug: "Instruct Patient to Push", isFlag: true },
+      { id: 4, cond: "Anaphylactic Shock", symp: "Sudden stridor, acute wheezing, facial angioedema, BP 75/40 after IV antibiotic", treatment: "Stop infusion, maintain airway, elevate legs, 100% O2 Non-Rebreather", drug: "Epinephrine (1:1000)", dose: "0.3", unit: "mg", route: "IM", exact: "0.3 mg IM anterolateral thigh", flagDrug: "Oral Diphenhydramine Alone", isFlag: true },
+      { id: 5, cond: "Acute STEMI", symp: "Substernal crushing chest pain >30 min radiating to jaw, diaphoresis, ST elevation in V1-V4", treatment: "Semi-Fowler's position, continuous ECG, baseline vitals, MONA protocol", drug: "Aspirin (Chewable)", dose: "325.0", unit: "mg", route: "PO", exact: "325 mg PO chewed immediately", flagDrug: "IM Epinephrine Injection", isFlag: true },
+      { id: 6, cond: "Severe Hyperkalemia", symp: "Serum K+ 7.4 mEq/L, muscle weakness, tall peaked T waves, wide QRS on telemetry", treatment: "Continuous cardiac monitoring, stop all K+ IV fluids, prepare telemetry", drug: "Calcium Gluconate 10%", dose: "1.0", unit: "g", route: "IV Loading", exact: "1g (10 mL) IV over 5-10 min", flagDrug: "KCl IV Bolus Push", isFlag: true },
+      { id: 7, cond: "Acute Pulmonary Edema", symp: "Severe orthopnea, pink frothy sputum, bilateral coarse crackles, SpO2 80%, BP 190/110", treatment: "High Fowler's position (legs dangling), 100% O2 NRB, strict I&O", drug: "Furosemide (Lasix)", dose: "40.0", unit: "mg", route: "IV Loading", exact: "40 mg IV slow push over 2 min", flagDrug: "Rapid 1L NS IV Fluid Bolus", isFlag: true },
+      { id: 8, cond: "Severe Hypoglycemia", symp: "Unresponsive diabetic patient, diaphoresis, clammy skin, blood glucose 34 mg/dL, no IV", treatment: "Protect airway, side-lying recovery position, recheck glucose in 15 min", drug: "Glucagon", dose: "1.0", unit: "mg", route: "IM", exact: "1 mg IM/SubQ stat", flagDrug: "Oral Juice via Syringe", isFlag: true },
+      { id: 9, cond: "Acute Ischemic Stroke", symp: "Sudden right-sided facial droop, arm drift, slurred speech <3 hours onset, CT scan negative for bleed", treatment: "NPO status, elevate HOB 30 deg, strict BP monitoring, NIHSS assessment", drug: "Alteplase (tPA)", dose: "0.9", unit: "mg", route: "IV Loading", exact: "0.9 mg/kg IV (10% bolus, rest 60 min)", flagDrug: "High Dose Anticoagulation Bolus", isFlag: true },
+      { id: 10, cond: "Opioid Overdose Emergency", symp: "Unresponsive, pinpoint pupils (miosis), RR 6 breaths/min, shallow cyanotic breathing", treatment: "Bag-Valve-Mask (BVM) ventilation with 100% O2, open airway", drug: "Naloxone (Narcan)", dose: "0.4", unit: "mg", route: "IV Loading", exact: "0.4 mg IV push q2m PRN", flagDrug: "IV Midazolam Sedation", isFlag: true },
+      { id: 11, cond: "Status Epilepticus", symp: "Continuous tonic-clonic seizure activity lasting >5 min or recurrent seizures without recovery", treatment: "Turn patient to side, protect head, suction oral secretions, DO NOT insert airway", drug: "Lorazepam (Ativan)", dose: "4.0", unit: "mg", route: "IV Loading", exact: "4 mg IV slow push over 2 min", flagDrug: "Oral Phenytoin Tablets", isFlag: true },
+      { id: 12, cond: "Septic Shock", symp: "Fever 39.5C, HR 128, BP 82/44 despite fluid bolus, serum lactate 4.8 mmol/L", treatment: "Draw blood cultures before Abx, 2 large-bore IVs, target MAP >65 mmHg", drug: "Lactated Ringer's", dose: "30.0", unit: "mL/kg", route: "IV Loading", exact: "30 mL/kg IV rapid bolus within 3h", flagDrug: "Strict Fluid Restriction", isFlag: true },
+      { id: 13, cond: "Deep Vein Thrombosis (DVT)", symp: "Unilateral calf warmth, erythema, swelling, tenderness, calf circumference difference >3cm", treatment: "Bed rest initially, elevate affected leg, DO NOT massage calf", drug: "Enoxaparin (Lovenox)", dose: "1.0", unit: "mg", route: "IM", exact: "1 mg/kg SubQ q12h", flagDrug: "Vigorous Calf Rubbing/Massage", isFlag: true },
+      { id: 14, cond: "Acute Severe Asthma", symp: "Use of accessory muscles, silent chest or high-pitched expiratory wheezing, Peak Flow <40%", treatment: "Upright sitting position, high-flow humidified oxygen, calm reassurance", drug: "Albuterol + Ipratropium", dose: "2.5", unit: "mg", route: "PO", exact: "Albuterol 2.5mg + Ipratropium Nebulized", flagDrug: "Propranolol Beta-Blocker", isFlag: true },
+      { id: 15, cond: "Hypertensive Crisis", symp: "BP 230/130 mmHg, severe occipital headache, blurred vision, papilledema, chest tightness", treatment: "Dim lights, quiet environment, assess neurological signs q15m", drug: "Nicardipine IV", dose: "5.0", unit: "mg", route: "IV Loading", exact: "5 mg/hr IV continuous infusion", flagDrug: "Sublingual Rapid Nifedipine", isFlag: true },
+      { id: 16, cond: "Diabetic Ketoacidosis (DKA)", symp: "Kussmaul respiration, fruity acetone breath, blood glucose 450 mg/dL, anion gap 22", treatment: "Hourly fingerstick glucose, Foley catheter for urine output, continuous cardiac monitor", drug: "Regular Insulin", dose: "0.1", unit: "Units", route: "IV Loading", exact: "0.1 Units/kg IV bolus then infusion", flagDrug: "SubQ Glargine Alone", isFlag: true },
+      { id: 17, cond: "Symptomatic Bradycardia", symp: "HR 34 bpm, syncope, BP 78/46, pale clammy skin, altered level of consciousness", treatment: "Position supine with legs elevated, prepare transcutaneous pacing pads", drug: "Atropine Sulfate", dose: "1.0", unit: "mg", route: "IV Loading", exact: "1 mg IV rapid push q3-5m (max 3mg)", flagDrug: "Atropine <0.5 mg Push", isFlag: true },
+      { id: 18, cond: "Thyroid Storm", symp: "High fever 40.5C, profuse sweating, HR 160 bpm, extreme agitation, delirium", treatment: "Cooling blankets, ice packs in axilla/groin, continuous cardiac monitoring", drug: "Propylthiouracil (PTU)", dose: "200.0", unit: "mg", route: "PO", exact: "200 mg PO q4h", flagDrug: "Aspirin Administration", isFlag: true },
+      { id: 19, cond: "Increased Intracranial Pressure", symp: "Cushing's Triad (Bradycardia, Severe HTN with widening pulse pressure, irregular respiration)", treatment: "Elevate HOB 30 deg, neck neutral midline, avoid coughing/straining/Valsalva", drug: "Mannitol 20%", dose: "1.0", unit: "g", route: "IV Loading", exact: "1 g/kg IV over 20 min with filter", flagDrug: "Hypotonic 0.45% Saline IV", isFlag: true },
+      { id: 20, cond: "Hepatic Encephalopathy", symp: "Flapping hand tremors (asterixis), elevated serum ammonia, disorientation, somnolence", treatment: "Safety precautions, low/controlled protein diet, monitor daily bowel movements", drug: "Lactulose", dose: "30.0", unit: "mL/kg", route: "PO", exact: "30-45 mL PO TID targeting 2-3 soft stools", flagDrug: "High Protein Bolus Feedings", isFlag: true },
+      { id: 21, cond: "Addisonian Crisis", symp: "Profound hypotension BP 70/40, hyponatremia, hyperkalemia, severe abdominal pain, collapse", treatment: "Recumbent position, continuous vitals monitoring, IV hydration access", drug: "Hydrocortisone", dose: "100.0", unit: "mg", route: "IV Loading", exact: "100 mg IV bolus stat", flagDrug: "Abrupt Steroid Discontinuation", isFlag: true },
+      { id: 22, cond: "Massive Pulmonary Embolism", symp: "Sudden pleuritic chest pain, dyspnea, acute RV strain on ECG, BP 76/40, cyanosis", treatment: "High Fowler's position, 100% O2, prepare for emergency thrombolysis", drug: "Alteplase", dose: "100.0", unit: "mg", route: "IV Loading", exact: "100 mg IV continuous infusion over 2h", flagDrug: "Heparin Monotherapy Alone", isFlag: true },
+      { id: 23, cond: "Peptic Ulcer Bleeding", symp: "Coffee-ground emesis, melena stool, postural dizziness, Hb 6.5 g/dL, tachycardia", treatment: "Two large-bore IV lines (16G), keep NPO, monitor stool/vomitus output", drug: "Pantoprazole (Protonix)", dose: "80.0", unit: "mg", route: "IV Loading", exact: "80 mg IV bolus then 8mg/hr infusion", flagDrug: "Oral NSAID Administration", isFlag: true },
+      { id: 24, cond: "Acute Pancreatitis", symp: "Severe mid-epigastric pain radiating to back, Cullen's sign (periumbilical ecchymosis), lipase x5", treatment: "STRICT NPO status, NGT suctioning if vomiting, strict fluid balance", drug: "Hydromorphone (Dilaudid)", dose: "1.0", unit: "mg", route: "IV Loading", exact: "1 mg IV q3h PRN for pain", flagDrug: "Immediate High-Fat Oral Diet", isFlag: true },
+      { id: 25, cond: "Myasthenic Crisis", symp: "Severe intercostal muscle weakness, inability to clear secretions, Negative Inspiratory Force <20", treatment: "Assess respiratory vital capacity at bedside, baseline pulmonary checks", drug: "Pyridostigmine", dose: "60.0", unit: "mg", route: "PO", exact: "60 mg PO q4h strictly on time", flagDrug: "IV Gentamicin Administration", isFlag: true },
+      { id: 26, cond: "Clostridium difficile Colitis", symp: "Profuse foul watery diarrhea (>8 times/day), abdominal cramping post-clindamycin use", treatment: "Contact isolation precautions, wash hands with SOAP & WATER (not alcohol rub)", drug: "Vancomycin (Oral)", dose: "125.0", unit: "mg", route: "PO", exact: "125 mg PO QID x 10 days", flagDrug: "Loperamide Antidiarrheal", isFlag: true },
+      { id: 27, cond: "Acute Angle-Closure Glaucoma", symp: "Sudden severe eye pain, blurred vision with colored halos around lights, rock-hard eyeball", treatment: "Dim ambient lighting, place patient in dark room, avoid pupillary dilation", drug: "Acetazolamide", dose: "500.0", unit: "mg", route: "PO", exact: "500 mg PO stat + Topical Miotics", flagDrug: "Atropine Ophthalmic Drops", isFlag: true },
+      { id: 28, cond: "Post-Operative Paralytic Ileus", symp: "Abdominal distention, absent bowel sounds >48h post-op, nausea, inability to pass flatus", treatment: "NPO status, insert NGT to low intermittent suction, ambulate PRN", drug: "IV Fluid Hydration", dose: "1000.0", unit: "mL/kg", route: "IV Loading", exact: "1000 mL NS replacement over 8 hours", flagDrug: "Oral Laxative Administration", isFlag: true },
+      { id: 29, cond: "Malignant Hyperthermia", symp: "Unexplained tachycardia, jaw muscle rigidity (trismus), sudden hypercapnia, temp 41.2C", treatment: "Stop causative anesthetic agents, hyperventilate with 100% O2, ice packs", drug: "Dantrolene Sodium", dose: "2.5", unit: "mg", route: "IV Loading", exact: "2.5 mg/kg IV rapid push", flagDrug: "Diltiazem Calcium Channel Blocker", isFlag: true },
+      { id: 30, cond: "Severe Symptomatic Hyponatremia", symp: "Serum Na+ 110 mEq/L, confusion, tonic seizures, cerebral edema", treatment: "Seizure precautions, strict hourly intake & output, frequent neuro checks", drug: "3% Hypertonic Saline", dose: "100.0", unit: "mL/kg", route: "IV Loading", exact: "100 mL IV over 10-15 min", flagDrug: "Rapid Na+ Correction >12 mEq/24h", isFlag: true },
+      { id: 31, cond: "MRSA Surgical Wound Infection", symp: "Incision line purulent foul discharge, dehiscence, fever 38.8C, localized redness/warmth", treatment: "Wound care isolation, surgical dressing change, send wound swab culture", drug: "Vancomycin IV", dose: "15.0", unit: "mg", route: "IV Loading", exact: "15 mg/kg IV q12h (infuse over >60m)", flagDrug: "Rapid IV Infusion <30 minutes", isFlag: true },
+      { id: 32, cond: "Neutropenic Fever", symp: "Post-chemotherapy ANC <500/mm3, single oral temperature reading 38.5C", treatment: "Protective neutropenic isolation, avoid raw fruits/vegetables, no rectal temps", drug: "Cefepime IV", dose: "2.0", unit: "g", route: "IV Loading", exact: "2g IV q8h empiric monotherapy", flagDrug: "Delaying Antibiotics >1 Hour", isFlag: true },
+      { id: 33, cond: "Chronic Gout Maintenance", symp: "History of recurrent podagra, elevated baseline serum uric acid (8.9 mg/dL)", treatment: "Patient teaching: Low purine diet (avoid red meat, shellfish, alcohol), high fluid intake", drug: "Allopurinol", dose: "100.0", unit: "mg", route: "PO", exact: "100 mg PO daily post-flare", flagDrug: "Initiating During Acute Flare", isFlag: true },
+      { id: 34, cond: "Rheumatoid Arthritis", symp: "Bilateral symmetrical joint swelling, morning joint stiffness lasting >1 hour, PIP joint deformity", treatment: "Warm paraffin baths, gentle range of motion exercises, joint protection education", drug: "Methotrexate", dose: "15.0", unit: "mg", route: "PO", exact: "15 mg PO ONCE WEEKLY + Folic Acid", flagDrug: "Daily Methotrexate Dosing", isFlag: true },
+      { id: 35, cond: "Hypercalcemic Crisis", symp: "Serum Calcium 14.8 mg/dL, shortened QT interval, constipation, muscle weakness, lethargy", treatment: "Force IV hydration with 0.9% NS, monitor ECG continuously, strain urine for stones", drug: "Zoledronic Acid", dose: "4.0", unit: "mg", route: "IV Loading", exact: "4 mg IV over 15 minutes", flagDrug: "Thiazide Diuretics", isFlag: true },
+      { id: 36, cond: "Ventilator-Associated Pneumonia", symp: "Mechanically ventilated >48h, new purulent endotracheal secretions, new infiltrates on CXR", treatment: "Elevate HOB 30-45 deg, oral care with Chlorhexidine q4h, suction as needed", drug: "Piperacillin-Tazobactam", dose: "4.5", unit: "g", route: "IV Loading", exact: "4.5g IV q6h extended infusion", flagDrug: "Routine Prophylactic Abx", isFlag: true },
+      { id: 37, cond: "SIADH (Hyponatremia)", symp: "Serum Na+ 122 mEq/L, high urine osmolality, normovolemic, confusion, weight gain without edema", treatment: "Strict fluid restriction (<800 mL/day), hypertonic saline if severe, daily weight", drug: "Tolvaptan", dose: "15.0", unit: "mg", route: "PO", exact: "15 mg PO once daily", flagDrug: "D5W IV Fluid Infusion", isFlag: true },
+      { id: 38, cond: "Acute Urinary Retention", symp: "Inability to void for 8 hours, severe suprapubic pain, bladder scan shows 900 mL retained", treatment: "Straight or Foley urethral catheterization, record initial drained volume", drug: "Tamsulosin (Flomax)", dose: "0.4", unit: "mg", route: "PO", exact: "0.4 mg PO daily post-dinner", flagDrug: "Atropine Sulfate Administration", isFlag: true },
+      { id: 39, cond: "Post-Carotid Endarterectomy Hematoma", symp: "Rapidly expanding neck mass, tracheal deviation, inspiratory stridor, respiratory distress", treatment: "EMERGENCY: Immediate bedside surgical incision clip removal/decompression", drug: "Tracheal Intubation Prep", dose: "1.0", unit: "Units", route: "PO", exact: "Emergency airway opening stat", flagDrug: "Delaying Airway for Transport", isFlag: true },
+      { id: 40, cond: "Bleeding Esophageal Varices", symp: "Cirrhosis patient with massive bright red hematemesis, melena, BP 80/40, HR 135", treatment: "Two large-bore IVs, lateral recovery position, clear airway suctioning", drug: "Octreotide (Sandostatin)", dose: "50.0", unit: "mcg", route: "IV Loading", exact: "50 mcg IV bolus then 50mcg/hr drip", flagDrug: "Oral Fluid Hydration", isFlag: true },
+      { id: 41, cond: "Acute Pericarditis", symp: "Sharp chest pain relieved by leaning forward and worsened by inspiration, pericardial friction rub", treatment: "High Fowler's position leaning forward over bedside table, rest", drug: "Ibuprofen + Colchicine", dose: "0.6", unit: "mg", route: "PO", exact: "Ibuprofen 600mg + Colchicine 0.6mg PO", flagDrug: "High Dose Corticosteroid First", isFlag: true },
+      { id: 42, cond: "Heparin-Induced Thrombocytopenia (HIT)", symp: "50% drop in platelet count 6 days into IV Heparin therapy, new arterial thrombosis suspected", treatment: "STOP ALL Heparin products immediately (including flush), label chart as Heparin Allergy", drug: "Argatroban", dose: "2.0", unit: "mcg", route: "IV Loading", exact: "2 mcg/kg/min IV continuous drip", flagDrug: "Platelet Transfusion", isFlag: true },
+      { id: 43, cond: "Pheochromocytoma Hypertensive Paroxysm", symp: "Triad: Pounding headache, profuse sweating, tachycardia with BP 240/120 mmHg", treatment: "Bed rest in quiet dark room, monitor arterial BP line continuously", drug: "Phentolamine IV", dose: "5.0", unit: "mg", route: "IV Loading", exact: "5 mg IV bolus (Alpha Blockade First)", flagDrug: "Propranolol Mono-Beta-Blocker", isFlag: true },
+      { id: 44, cond: "Pre-Renal Acute Kidney Injury", symp: "BUN:Creatinine ratio >20:1, urine output <20 mL/hr, poor skin turgor, severe dehydration", treatment: "Insert Foley catheter, daily weights, discontinue all nephrotoxic drugs", drug: "0.9% Normal Saline", dose: "1000.0", unit: "mL/kg", route: "IV Loading", exact: "1000 mL 0.9% NS IV bolus over 1-2h", flagDrug: "High Dose Furosemide Push", isFlag: true },
+      { id: 45, cond: "Central Diabetes Insipidus", symp: "Polyuria (8L/day diluted urine), serum Na+ 152 mEq/L, urine spec gravity 1.002, extreme thirst", treatment: "Provide free oral water, monitor fluid balance hourly, check urine spec gravity", drug: "Desmopressin (DDAVP)", dose: "1.0", unit: "mcg", route: "IV Loading", exact: "1-2 mcg IV/SubQ BID", flagDrug: "Strict Fluid Restriction", isFlag: true },
+      { id: 46, cond: "Acute Compartment Syndrome", symp: "Severe leg pain out of proportion to injury, pain on passive stretch, paresthesia, firm compartment", treatment: "DO NOT elevate limb above heart, remove tight casts/dressings, notify surgeon stat", drug: "Emergency Fasciotomy", dose: "1.0", unit: "Units", route: "PO", exact: "Surgical decompressing fasciotomy", flagDrug: "Elevating Leg Above Heart", isFlag: true },
+      { id: 47, cond: "Carbon Monoxide Poisoning", symp: "Enclosed fire exposure, cherry-red skin color, headache, confusion, Carboxyhemoglobin 30%", treatment: "Remove from source, administer 100% humidified O2 via Non-Rebreather mask", drug: "100% Hyperbaric Oxygen", dose: "100.0", unit: "Units", route: "PO", exact: "100% O2 via NRB or Hyperbaric", flagDrug: "Trusting Standard Pulse Oximeter", isFlag: true },
+      { id: 48, cond: "Severe Hyperviscosity / Polycythemia", symp: "Hematocrit 62%, plethoric red face, severe dizziness, tinnitus, blurred vision", treatment: "Phlebotomy assistance, encourage hydration, monitor for thrombotic complications", drug: "Therapeutic Phlebotomy", dose: "500.0", unit: "mL/kg", route: "IV Loading", exact: "Removal of 500 mL blood + NS replace", flagDrug: "Dehydrating Diuretics", isFlag: true },
+      { id: 49, cond: "Vincristine Extravasation", symp: "Burning, stinging, local edema at IV catheter site during IV Vincristine infusion", treatment: "STOP infusion immediately, DO NOT flush, aspirate remaining drug from catheter", drug: "Hyaluronidase + Warm Pack", dose: "150.0", unit: "Units", route: "PO", exact: "Inject Hyaluronidase SubQ + Warm Pack", flagDrug: "Applying Cold Compress Packs", isFlag: true },
+      { id: 50, cond: "Dopamine / Norepinephrine Extravasation", symp: "Blanching, coldness, local ischemia around peripheral IV vasopressor line site", treatment: "Stop infusion immediately, leave cannula in place to administer antidote if possible", drug: "Phentolamine SubQ", dose: "5.0", unit: "mg", route: "PO", exact: "Infiltrate 5-10 mg Phentolamine SubQ", flagDrug: "Applying Tight Tourniquet", isFlag: true }
+    ];
+
+    let currentCaseIdx = 0;
+    let score = 0;
+    let timer = 25;
+    let timerInterval = null;
+    
+    let selectedTx = null;
+    let selectedDrug = null;
+    let selectedUnit = 'mg';
+    let selectedRoute = 'IV Loading';
+    let activeMode = 'match';
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timer = 25;
+      document.getElementById("timer-display").innerText = `⏱️ ${timer}s`;
+      timerInterval = setInterval(() => {
+        timer--;
+        document.getElementById("timer-display").innerText = `⏱️ ${timer}s`;
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          sound.playWrong();
+          nextCase();
+        }
+      }, 1000);
+    }
+
+    function switchMode(mode) {
+      activeMode = mode;
+      document.getElementById("game-mode-match").classList.add("hidden");
+      document.getElementById("game-mode-dosing").classList.add("hidden");
+      document.getElementById("game-mode-flag").classList.add("hidden");
+
+      document.getElementById("mode-match-btn").className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition";
+      document.getElementById("mode-dosing-btn").className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition";
+      document.getElementById("mode-flag-btn").className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition";
+
+      if (mode === 'match') {
+        document.getElementById("game-mode-match").classList.remove("hidden");
+        document.getElementById("mode-match-btn").className = "px-3 py-1.5 rounded-lg text-teal-400 bg-slate-800 transition";
+        loadMatchCase();
+      } else if (mode === 'dosing') {
+        document.getElementById("game-mode-dosing").classList.remove("hidden");
+        document.getElementById("mode-dosing-btn").className = "px-3 py-1.5 rounded-lg text-emerald-400 bg-slate-800 transition";
+        loadDosingCase();
+      } else if (mode === 'flag') {
+        document.getElementById("game-mode-flag").classList.remove("hidden");
+        document.getElementById("mode-flag-btn").className = "px-3 py-1.5 rounded-lg text-rose-400 bg-slate-800 transition";
+        loadFlagCase();
+      }
+    }
+
+    // MODE 1: SPEED MATCH LOGIC
+    function loadMatchCase() {
+      startTimer();
+      const c = matrixCases[currentCaseIdx];
+      document.getElementById("match-case-counter").innerText = `Case ${currentCaseIdx + 1} / ${matrixCases.length}`;
+      document.getElementById("match-condition-title").innerText = c.cond;
+      document.getElementById("match-symptoms").innerText = c.symp;
+
+      selectedTx = null;
+      selectedDrug = null;
+
+      let txDistractors = matrixCases.map(x => x.treatment).filter(t => t !== c.treatment);
+      let drugDistractors = matrixCases.map(x => `${x.drug} (${x.exact})`).filter(d => d !== `${c.drug} (${c.exact})`);
+
+      let txOptions = shuffleArray([c.treatment, ...shuffleArray(txDistractors).slice(0, 2)]);
+      let drugOptions = shuffleArray([`${c.drug} (${c.exact})`, ...shuffleArray(drugDistractors).slice(0, 2)]);
+
+      renderMatchOptions("tx-options", txOptions, 'tx');
+      renderMatchOptions("drug-options", drugOptions, 'drug');
+    }
+
+    function renderMatchOptions(containerId, options, type) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left p-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 transition leading-snug";
+        btn.innerText = opt;
+        btn.onclick = () => {
+          if (type === 'tx') selectedTx = opt;
+          if (type === 'drug') selectedDrug = opt;
+
+          Array.from(container.children).forEach(b => b.classList.remove("border-teal-400", "bg-teal-500/20", "text-teal-200"));
+          btn.classList.add("border-teal-400", "bg-teal-500/20", "text-teal-200");
+
+          checkMatchAnswer();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function checkMatchAnswer() {
+      const c = matrixCases[currentCaseIdx];
+      if (selectedTx && selectedDrug) {
+        if (selectedTx === c.treatment && selectedDrug === `${c.drug} (${c.exact})`) {
+          score += 100;
+          sound.playCorrect();
+        } else {
+          sound.playWrong();
+        }
+        document.getElementById("score-display").innerText = `Score: ${score}`;
+        nextCase();
+      }
+    }
+
+    // MODE 2: DOSING DIAL LOGIC
+    function loadDosingCase() {
+      startTimer();
+      const c = matrixCases[currentCaseIdx];
+      document.getElementById("dosing-case-counter").innerText = `Case ${currentCaseIdx + 1} / ${matrixCases.length}`;
+      document.getElementById("dosing-drug-name").innerText = c.drug;
+      document.getElementById("dosing-case-desc").innerText = `Indication: ${c.cond} - ${c.symp}`;
+      document.getElementById("dosing-nursing-care").innerText = c.treatment;
+      
+      const slider = document.getElementById("slider-dose");
+      slider.value = 1.0;
+      document.getElementById("slider-dose-val").innerText = "1.0";
+      
+      slider.oninput = (e) => {
+        document.getElementById("slider-dose-val").innerText = parseFloat(e.target.value).toFixed(1);
+      };
+
+      setUnit('mg');
+      setRoute('IV Loading');
+    }
+
+    function setUnit(u) {
+      selectedUnit = u;
+      document.querySelectorAll(".unit-btn").forEach(btn => {
+        if (btn.innerText === u) {
+          btn.className = "unit-btn px-3 py-2 bg-emerald-600/30 border border-emerald-500 text-emerald-300 rounded-lg text-xs font-bold";
+        } else {
+          btn.className = "unit-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 text-slate-300";
+        }
+      });
+    }
+
+    function setRoute(r) {
+      selectedRoute = r;
+      document.querySelectorAll(".route-btn").forEach(btn => {
+        if (btn.innerText === r) {
+          btn.className = "route-btn px-3 py-2 bg-emerald-600/30 border border-emerald-500 text-emerald-300 rounded-lg text-xs font-bold";
+        } else {
+          btn.className = "route-btn px-3 py-2 bg-slate-800 rounded-lg text-xs font-bold border border-slate-700 text-slate-300";
+        }
+      });
+    }
+
+    function submitDosing() {
+      const c = matrixCases[currentCaseIdx];
+      const val = parseFloat(document.getElementById("slider-dose").value);
+      const targetVal = parseFloat(c.dose);
+
+      const isDoseCorrect = Math.abs(val - targetVal) <= (targetVal * 0.25 || 0.5);
+      const isUnitCorrect = selectedUnit.toLowerCase() === c.unit.toLowerCase();
+
+      if (isDoseCorrect && isUnitCorrect) {
+        score += 150;
+        sound.playCorrect();
+      } else {
+        sound.playWrong();
+      }
+      document.getElementById("score-display").innerText = `Score: ${score}`;
+      nextCase();
+    }
+
+    // MODE 3: RED FLAG SAFETY LOGIC
+    function loadFlagCase() {
+      startTimer();
+      const c = matrixCases[currentCaseIdx];
+      document.getElementById("flag-case-counter").innerText = `Case ${currentCaseIdx + 1} / ${matrixCases.length}`;
+      document.getElementById("flag-scenario").innerText = `Diagnosis: ${c.cond}\nKey Symptoms: ${c.symp}\nStandard Action: ${c.treatment}`;
+      document.getElementById("flag-proposed-drug").innerText = c.flagDrug;
+    }
+
+    function handleFlagAction(userSaidContraindicated) {
+      const c = matrixCases[currentCaseIdx];
+      if (userSaidContraindicated === c.isFlag) {
+        score += 200;
+        sound.playCorrect();
+      } else {
+        sound.playWrong();
+      }
+      document.getElementById("score-display").innerText = `Score: ${score}`;
+      nextCase();
+    }
+
+    function nextCase() {
+      clearInterval(timerInterval);
+      currentCaseIdx = (currentCaseIdx + 1) % matrixCases.length;
+      setTimeout(() => {
+        switchMode(activeMode);
+      }, 300);
+    }
+
+    function shuffleArray(arr) {
+      let shuffled = [...arr];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Launch app once DOM is ready
+    window.addEventListener("DOMContentLoaded", () => {
+      loadMatchCase();
+    });
+  </script>
+</body>
+</html>
