@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCFHS Med-Surg & Midwifery Clinical Matrix</title>
+  <title>SCFHS Med-Surg & Midwifery Advanced Clinical Simulator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .glass-card {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 font-sans selection:bg-teal-500 selection:text-slate-900">
 
   <!-- Header & Navigation -->
-  <header class="w-full max-w-5xl glass-card rounded-2xl p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-teal-500/30 shadow-xl">
+  <header class="w-full max-w-5xl glass-card rounded-2xl p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-teal-500/30 shadow-2xl">
     <div>
       <div class="flex items-center gap-2">
         <span class="bg-teal-500/20 text-teal-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-teal-500/40">SCFHS Prometric Standard</span>
@@ -202,7 +202,7 @@
 
     const sound = new SoundEngine();
 
-    // 50 SCFHS NURSING & MIDWIFERY CASES WITH SYMPTOMS AND TREATMENTS
+    // FULL 50 ADVANCED SCFHS CLINICAL CASES
     const matrixCases = [
       { id: 1, cond: "Postpartum Hemorrhage (PPH)", symp: "BOGGY UTERUS, heavy vaginal bleeding (>500mL post-NVD), tachycardia, BP 85/50", treatment: "Bimanual Uterine Massage + High Flow O2", drug: "Oxytocin (Pitocin)", dose: "20.0", unit: "Units", route: "IV Loading", exact: "20 Units in 1L NS IV infusion", flagDrug: "Perform Forceps Traction", isFlag: true },
       { id: 2, cond: "Severe Eclampsia Crisis", symp: "Pregnant 34 wks, BP 170/110, generalized tonic-clonic seizures, hyperreflexia (+4), proteinuria +3", treatment: "Maintain airway, side-lying position, padded side rails", drug: "Magnesium Sulfate", dose: "4.0", unit: "g", route: "IV Loading", exact: "4g IV loading dose over 15 min", flagDrug: "Ergotamine Administration", isFlag: true },
